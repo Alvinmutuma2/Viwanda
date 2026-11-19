@@ -276,9 +276,7 @@ function vJoin(){
     <div class="eyebrow">Slot expired</div>
     <h1>Your listing is paused.</h1>
     <div class="status bad">🔒 ${(S.brand&&S.brand.name)||'Your brand'} dropped off the board — the 30 days passed and no renewal was confirmed. Shops can’t see you right now. No hard feelings, renew any time and you’re back.</div>
-    <div class="payrow"><div class="lbl">Renew · Lipa na M-Pesa</div><div class="val">${CFG.paybill?('Paybill '+CFG.paybill):'Paybill — set in config'}</div><div class="lbl" style="margin-top:6px">KES ${fmt(FEE)} · Account: your phone</div></div>
-    <input class="ph m" id="f-code" placeholder="Paste M-Pesa code to renew">
-    <button class="btn pay" data-submit="renew">Renew my slot</button>
+    ${payBlock('renew')}
     <div id="joinstatus"></div>`;
   if(listedLive())return `
     <div class="eyebrow">Your slot · live</div>
@@ -290,51 +288,54 @@ function vJoin(){
     ${!live()?`<button class="link" data-expire="1">⏩ (demo) fast-forward to expiry — test the auto-lock</button>`:''}`;
   if(S.payPending)return `
     <div class="eyebrow">Submitted ✓</div>
-    <h1>Karibu! Confirming your payment.</h1>
-    <div class="status warn">We’ve got your code <b>${S.payPending}</b>. Your brand goes live the moment it’s matched (usually minutes). Then you’re visible for 30 days.</div>
-    ${!live()?`<button class="btn pay" data-democonfirm="1">Simulate confirmation (demo)</button>`:''}
+    <h1>Karibu! We’ve got your brand.</h1>
+    <div class="status warn">${CFG.paybill?('Got code <b>'+S.payPending+'</b>. We match it to the actual M-Pesa payment before you go live — a code that doesn’t match a real payment won’t activate anything.'):'We’ll reach you shortly to activate your listing and sort payment — any way that works for you. Once it’s set you’re visible for 30 days.'}</div>
+    ${!live()?`<button class="btn pay" data-democonfirm="1">Simulate activation (demo)</button>`:''}
     <button class="btn ghost" data-go="wall">← Home</button>
-    <div class="fine">No Daraja, no API — you paid, we match the code. If anything’s off we’ll never cut you wrongly.</div>`;
+    <div class="fine">Viwanda isn’t tied to any one money rail — and we’ll never cut you off wrongly.</div>`;
   return `
   <div class="eyebrow">For makers · list in minutes</div>
   <h1>Put your brand in front of Kenya.</h1>
   <p class="lead">We’re on your side — this is the one place built to get native brands found. Fill it in, pay KES ${fmt(FEE)}, you’re live.</p>
   <input class="ph" id="f-name" placeholder="Brand / company name">
-  <select class="ph" id="f-cat"><option value="">Category…</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+  <select class="ph" id="f-cat" onchange="document.getElementById('f-catother').style.display=this.value==='Other'?'block':'none'"><option value="">Category…</option>${CATS.map(c=>`<option>${c}</option>`).join('')}<option>Other</option></select>
+  <input class="ph" id="f-catother" placeholder="Your own category" style="display:none">
   <input class="ph" id="f-prod" placeholder="Products (e.g. cooking oil, soap)">
   <input class="ph" id="f-cover" placeholder="Where you deliver (e.g. Nairobi, Kiambu)">
   <input class="ph" id="f-web" placeholder="Website (optional)">
   <input class="ph" id="f-ig" placeholder="Instagram handle (optional)">
-  <input class="ph m" id="f-phone" placeholder="Your WhatsApp / M-Pesa number" inputmode="numeric">
-  <div class="payrow"><div class="lbl">Lipa na M-Pesa</div><div class="val">${CFG.paybill?('Paybill '+CFG.paybill):'Paybill — set in config'}</div><div class="lbl" style="margin-top:6px">KES ${fmt(FEE)} · Account: your phone</div></div>
-  <input class="ph m" id="f-code" placeholder="Paste M-Pesa code (e.g. SI39K2P0QR)">
-  <button class="btn pay" data-submit="new">I’ve paid — list me</button>
+  <input class="ph m" id="f-phone" placeholder="Your WhatsApp number" inputmode="numeric">
+  ${payBlock('new')}
   <div id="joinstatus"></div>
   <div class="fine"><b>A full profile ranks higher</b> — the more shops see (products, coverage, links), the more reach you get. Rank is earned, never bought.</div>`;
 }
 
 function vReturns(){
   const r=S.returns||{views:0,connects:0,orders:0,newShops:0};
-  const val=(r.newShops||0)*8500;
+  const avg=S.avgOrder||0;
+  const val=(r.newShops||0)*avg;
   const score=Math.min(100, Math.round((r.newShops*12)+(r.connects*4)+(r.orders*8)));
   return `
   <div class="eyebrow">Your returns · this month</div>
   <h1>Is the KES ${fmt(FEE)} worth it?</h1>
-  <p class="lead">Your numbers, honest. The one that matters most is new shops — real customers you didn’t have before.</p>
+  <p class="lead">Your real numbers — nothing invented. The one that matters is new shops: customers you didn’t have before.</p>
   <div class="big-stat"><div class="n">${r.newShops||0}</div><div class="l">new shops reached (new customers)</div></div>
   <div class="retrow">
     <div class="ret"><div class="n" style="color:var(--indigo)">${r.views}</div><div class="l">views</div></div>
     <div class="ret"><div class="n" style="color:var(--green)">${r.connects}</div><div class="l">direct chats</div></div>
     <div class="ret"><div class="n" style="color:var(--gold)">${r.orders}</div><div class="l">orders</div></div>
   </div>
+  <div class="sub">Worth-it calculator · your numbers</div>
+  <input class="ph m" id="avgorder" inputmode="numeric" placeholder="Your average order size (KES)" value="${avg||''}">
   <div class="box">
-    <div class="kv"><span>Est. value of new shops</span><b>KES ${fmt(val)}</b></div>
+    <div class="kv"><span>${r.newShops||0} new shops × KES ${fmt(avg)}</span><b>KES ${fmt(val)}</b></div>
     <div class="kv"><span>Your fee</span><b>KES ${fmt(FEE)}</b></div>
-    <div class="kv"><span>Return on fee</span><b style="color:${val>FEE?'var(--green)':'var(--gold)'}">${val>FEE?(Math.round(val/FEE*10)/10)+'×':'building…'}</b></div>
+    <div class="kv"><span>Return on fee</span><b style="color:${val>FEE?'var(--green)':'var(--gold)'}">${avg?(val>FEE?(Math.round(val/FEE*10)/10)+'×':'below fee — keep going'):'enter your avg order'}</b></div>
   </div>
+  <div class="fine" style="border:0;padding-top:2px">Uses <b>your</b> order size × the <b>real</b> new shops you reached. No made-up figures.</div>
   <div class="sub">Viwanda delivery score · for you</div>
   <div class="gauge"><i style="width:${score}%"></i></div>
-  <div class="fine" style="border:0;padding-top:4px">${score>=50?'Viwanda is pulling its weight for you this month.':'Honestly — still warming up in your category. More shops are joining Polaris weekly; your reach climbs with them. We’ll keep earning it.'}</div>
+  <div class="fine" style="border:0;padding-top:4px">${score>=50?'Viwanda is pulling its weight for you this month.':'Honest — it’s early, so this is low. Your board fills as shops find you, and more join Polaris weekly. We’ll keep earning it.'}</div>
   <button class="btn pay" data-submit="renew">Renew · KES ${fmt(FEE)}</button>
   <button class="link" data-go="wall">← Home</button>`;
 }
@@ -373,6 +374,7 @@ function vFinance(){
   <h1>Real banks fund the stock.</h1>
   <p class="lead">Live stock-finance facilities. Viwanda hands them a scored chain instead of a blind one.</p>
   ${BANKS.map(b=>`<button class="card" data-bank="${b.id}"><div class="r1"><div class="av" style="background:#2d3d8f">${b.nm[0]}</div><div class="nm"><b>${b.nm}</b><small>${b.prod}</small></div><div class="dg" style="color:var(--mut2);font-size:18px">›</div></div></button>`).join('')}
+  <div class="why"><b>Why a bank partners with us:</b> Viwanda owns no payment rail — your channel collects the fees and finances the stock. No Safaricom in your middle. Neutral infrastructure, yours to build on.</div>
   <div class="fine">Real, publicly advertised facilities; terms indicative. <button class="link" data-go="anchor" style="margin:0">Why banks lend to the anchor →</button></div>`;
 }
 function vFinanceItem(){
@@ -433,22 +435,37 @@ function renderTour(){
 }
 
 function demoReturns(){ return {views:Math.floor(Math.random()*40)+22,connects:Math.floor(Math.random()*9)+4,orders:Math.floor(Math.random()*5)+1,newShops:Math.floor(Math.random()*6)+2}; }
+/* rail-neutral: paybill set -> M-Pesa + code; no paybill -> submit & we reach you */
+function payBlock(action){
+  if(CFG.paybill){
+    return `<div class="payrow"><div class="lbl">Lipa na M-Pesa</div><div class="val">Paybill ${CFG.paybill}</div><div class="lbl" style="margin-top:6px">KES ${fmt(FEE)} · Account: your phone</div></div>
+    <input class="ph m" id="f-code" placeholder="Paste M-Pesa code (e.g. SI39K2P0QR)">
+    <button class="btn pay" data-submit="${action}">${action==='renew'?'I’ve paid — renew':'I’ve paid — list me'}</button>`;
+  }
+  return `<div class="status">To go live, submit your brand and we’ll reach you to sort payment — any way that works for you. Viwanda isn’t tied to one money rail.</div>
+    <button class="btn pay" data-submit="${action}">${action==='renew'?'Request renewal':'Submit my brand — KES '+fmt(FEE)+'/mo'}</button>`;
+}
 async function doSubmit(kind){
-  const code=(document.getElementById('f-code')||{}).value||'';
   const st=document.getElementById('joinstatus');
-  if(!code||code.length<6){ if(st)st.innerHTML='<div class="status bad">Paste the M-Pesa confirmation code to continue.</div>'; return; }
-  if(kind==='renew'){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; if(!S.returns)S.returns=demoReturns(); save();
-    if(sb)L_submit({brand_name:(S.brand&&S.brand.name)||'renew',mpesa_code:code,amount:FEE});
-    go('returns'); return; }
-  const name=(document.getElementById('f-name')||{}).value||'';
-  if(!name){ if(st)st.innerHTML='<div class="status bad">Add your brand name.</div>'; return; }
-  S.brand={name:name,cat:(document.getElementById('f-cat')||{}).value||'Maker',good:(document.getElementById('f-prod')||{}).value||'',cover:(document.getElementById('f-cover')||{}).value||'',web:(document.getElementById('f-web')||{}).value||'',ig:(document.getElementById('f-ig')||{}).value||'',phone:(document.getElementById('f-phone')||{}).value||'',price:0};
-  const res=await L_submit({brand_name:S.brand.name,category:S.brand.cat,products:S.brand.good,coverage:S.brand.cover,website:S.brand.web,instagram:S.brand.ig,phone:S.brand.phone,mpesa_code:code,amount:FEE});
-  S.payPending=code;
+  const code=((document.getElementById('f-code')||{}).value||'').trim().toUpperCase();
+  if(CFG.paybill && !/^[A-Z0-9]{10}$/.test(code)){ if(st)st.innerHTML='<div class="status bad">That doesn’t look like an M-Pesa code — they’re 10 letters & numbers (e.g. SI39K2P0QR).</div>'; return; }
+  const zero={views:0,connects:0,orders:0,newShops:0};
+  if(kind==='renew'){
+    if(CFG.paybill){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; if(!S.returns)S.returns=zero; save(); if(sb)L_submit({brand_name:(S.brand&&S.brand.name)||'renew',mpesa_code:code,amount:FEE}); go('returns'); return; }
+    if(sb)L_submit({brand_name:(S.brand&&S.brand.name)||'renew',amount:FEE}); S.payPending='requested'; save(); go('join'); return;
+  }
+  const name=((document.getElementById('f-name')||{}).value||'').trim();
+  if(!name){ if(st)st.innerHTML='<div class="status bad">Add your brand name to continue.</div>'; return; }
+  let cat=((document.getElementById('f-cat')||{}).value||'').trim();
+  if(cat==='Other')cat=((document.getElementById('f-catother')||{}).value||'').trim()||'Other';
+  S.brand={name:name,cat:cat||'Maker',good:((document.getElementById('f-prod')||{}).value||'').trim(),cover:((document.getElementById('f-cover')||{}).value||'').trim(),web:((document.getElementById('f-web')||{}).value||'').trim(),ig:((document.getElementById('f-ig')||{}).value||'').trim(),phone:((document.getElementById('f-phone')||{}).value||'').trim(),price:0};
+  if(!S.returns)S.returns=zero;
+  const res=await L_submit({brand_name:S.brand.name,category:S.brand.cat,products:S.brand.good,coverage:S.brand.cover,website:S.brand.web,instagram:S.brand.ig,phone:S.brand.phone,mpesa_code:(CFG.paybill?code:null),amount:FEE});
+  S.payPending=(CFG.paybill?code:'submitted');
   if(res&&res.error&&st)st.innerHTML='<div class="status bad">Saved, but server said: '+res.error+'</div>';
   save(); go('join');
 }
-function demoConfirm(){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; S.returns=demoReturns(); save(); go('returns'); }
+function demoConfirm(){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; S.returns={views:0,connects:0,orders:0,newShops:0}; save(); go('returns'); }
 
 function wire(){
   const bs=document.getElementById('bsearch'); if(bs)bs.oninput=()=>{const q=bs.value.toLowerCase();document.querySelectorAll('[data-s]').forEach(c=>{c.style.display=c.dataset.s.indexOf(q)>-1?'':'none';});};
@@ -457,7 +474,8 @@ function wire(){
   document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
   document.querySelectorAll('[data-brand]').forEach(b=>b.onclick=()=>{S.brandId=b.dataset.brand;go('listing');});
   document.querySelectorAll('[data-bank]').forEach(b=>b.onclick=()=>{S.bankId=b.dataset.bank;go('financeitem');});
-  document.querySelectorAll('[data-connect]').forEach(b=>b.addEventListener('click',()=>{L_event(b.dataset.connect,'connect'); if(S.returns){S.returns.connects++;S.returns.newShops++;save();}}));
+  document.querySelectorAll('[data-connect]').forEach(b=>b.addEventListener('click',()=>{L_event(b.dataset.connect,'connect');}));
+  const ao=document.getElementById('avgorder'); if(ao)ao.onchange=()=>{S.avgOrder=parseInt((ao.value||'').replace(/\D/g,''))||0;save();render();};
   document.querySelectorAll('[data-submit]').forEach(b=>b.onclick=()=>doSubmit(b.dataset.submit));
   document.querySelectorAll('[data-democonfirm]').forEach(b=>b.onclick=()=>demoConfirm());
   document.querySelectorAll('[data-expire]').forEach(b=>b.onclick=()=>{S.paidThrough=Date.now()-1000;save();go('join');});

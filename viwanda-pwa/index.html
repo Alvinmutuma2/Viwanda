@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Viwanda</title>
+<meta name="theme-color" content="#0b7a52">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+  :root{--bg:#eceee9;--paper:#fff;--ink:#111720;--mut:#5d6b7a;--mut2:#92a0ad;--line:#e2e5df;--line2:#d3d8d0;--green:#0b7a52;--greenbg:#e5f3ec;--gold:#b7791f;--goldbg:#f6edd9;--indigo:#2d3d8f;--indigobg:#e8eaf7;--red:#b4452f;--redbg:#f6e3e0;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;display:flex;justify-content:center}
+  #app{width:100%;max-width:440px;min-height:100vh;background:var(--bg);display:flex;flex-direction:column}
+  .bar{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;background:var(--bg);position:sticky;top:0;z-index:5;border-bottom:1px solid var(--line)}
+  .back{display:flex;align-items:center;gap:6px;color:var(--mut);background:none;border:0;font-size:14px;cursor:pointer;padding:6px 2px}
+  .back[disabled]{opacity:0;pointer-events:none}
+  .wm{font-weight:800;font-size:15px;letter-spacing:1px;display:flex;align-items:center;gap:7px}
+  .wm .d{width:9px;height:9px;border-radius:3px;background:var(--green);display:inline-block}
+  .barbtns{display:flex;gap:2px}
+  .ib{color:var(--mut2);background:none;border:0;font-size:13px;cursor:pointer;padding:6px 6px;border-radius:8px}.ib:active{color:var(--ink)}
+  .scr{flex:1;padding:16px 18px 44px;animation:in .2s ease}
+  @keyframes in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .eyebrow{font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut2);margin:4px 0 12px}
+  h1{font-size:24px;margin:0 0 6px;font-weight:800;letter-spacing:-.4px;line-height:1.16}
+  .lead{color:var(--mut);font-size:14px;line-height:1.5;margin:0 0 16px}
+  .mono{font-family:var(--mono)}
+  .btn{display:block;width:100%;border:0;border-radius:12px;padding:16px;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px;font-family:inherit;transition:transform .08s;text-align:center;text-decoration:none}
+  .btn:active{transform:scale(.985)}
+  .btn.pay{background:var(--green);color:#fff}.btn.act{background:var(--ink);color:#fff}.btn.star{background:#1b2230;color:#fff}
+  .btn.ghost{background:transparent;color:var(--mut);border:1px solid var(--line2)}
+  .btn[disabled]{opacity:.5;pointer-events:none}
+  .link{display:inline-block;color:var(--green);font-weight:700;font-size:13.5px;text-decoration:none;margin-top:16px;cursor:pointer;background:none;border:0;font-family:inherit}
+  input.ph,select.ph,textarea.ph{width:100%;padding:13px;border:1px solid var(--line2);border-radius:12px;font-size:15px;margin-top:10px;font-family:inherit;background:var(--paper)}
+  input.ph.m{font-family:var(--mono)}
+  .hero{background:#141b29;color:#eef2f8;border-radius:18px;padding:22px 18px;text-align:center}
+  .hero .st{color:#f5c451;font-size:13px;letter-spacing:3px;font-weight:800}
+  .hero h2{font-size:20px;margin:8px 0 4px;letter-spacing:-.3px;line-height:1.2}.hero p{color:#9fb0c6;font-size:13px;margin:0;line-height:1.5}
+  .modebar{display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 0 2px;font-size:11px;font-weight:700}
+  .modebar .dot{width:7px;height:7px;border-radius:50%}
+  .modebar.demo{color:var(--gold)}.modebar.demo .dot{background:var(--gold)}
+  .modebar.live{color:var(--green)}.modebar.live .dot{background:var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .counters{display:flex;gap:9px;margin:12px 0}
+  .ct{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px 6px;text-align:center}
+  .ct .n{font-family:var(--mono);font-weight:800;font-size:18px;letter-spacing:-.5px}
+  .ct .l{font-size:9.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.3px;margin-top:3px;font-weight:700;line-height:1.3}
+  .ct.a .n{color:var(--green)}.ct.b .n{color:var(--gold)}.ct.c .n{color:var(--indigo)}
+  .doors{display:flex;gap:10px;margin:12px 0}
+  .door{flex:1;display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:13px;cursor:pointer;font-family:inherit;color:inherit;text-align:left;transition:transform .08s}
+  .door:active{transform:scale(.99)}.door .di{font-size:21px;flex:none}
+  .door b{font-size:14px;display:block}.door small{color:var(--mut);font-size:10.5px;line-height:1.3;display:block;margin-top:2px}
+  .door .dg{margin-left:auto;color:var(--mut2);font-size:18px}
+  .sub{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut2);margin:18px 0 8px}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin:4px 0 10px;-webkit-overflow-scrolling:touch}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{white-space:nowrap;border:1px solid var(--line2);background:var(--paper);color:var(--mut);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .sortrow{display:flex;gap:8px;margin-bottom:10px}
+  .sortrow button{flex:1;border:1px solid var(--line2);background:var(--paper);color:var(--mut);border-radius:10px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+  .sortrow button.on{background:var(--greenbg);color:var(--green);border-color:#bfe3cf}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;width:100%;text-align:left;color:inherit;font-family:inherit;display:block;transition:transform .08s}
+  .card:active{transform:scale(.99)}
+  .card .r1{display:flex;align-items:center;gap:11px}
+  .av{width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;font-weight:800;color:#fff;font-size:14px}
+  .card .nm{flex:1;min-width:0}.card .nm b{font-size:14.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card .nm small{color:var(--mut);font-size:12px}
+  .card .r2{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:11.5px}
+  .tag{background:#f4f5f1;border-radius:7px;padding:3px 8px;color:var(--mut);font-weight:600}
+  .rank{margin-left:auto;color:var(--gold);font-weight:800;font-family:var(--mono)}
+  .pill{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:.2px;white-space:nowrap}
+  .pill.ok{background:var(--greenbg);color:var(--green)}.pill.warm{background:var(--goldbg);color:var(--gold)}.pill.no{background:var(--redbg);color:var(--red)}
+  .box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:4px 16px;margin:14px 0}
+  .kv{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:10px}.kv:last-child{border-bottom:0}.kv span{color:var(--mut)}.kv b{font-weight:700;text-align:right}
+  .socials{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .soc{display:flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--ink);text-decoration:none}
+  .need{padding:11px 13px;border-radius:11px;font-size:13.5px;display:flex;align-items:center;gap:8px;margin:12px 0}
+  .need.stock{background:var(--goldbg);color:var(--gold)}.need b{font-weight:800}
+  .why{background:#fbfbf9;border:1px solid var(--line);border-left:3px solid var(--green);border-radius:10px;padding:13px;font-size:12.5px;line-height:1.55;color:var(--mut);margin:14px 0}.why b{color:var(--ink)}
+  .inv{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .inv .top{padding:18px 18px 14px;border-bottom:1px dashed var(--line2)}
+  .inv .top .z{font-size:12px;color:var(--mut)}.inv .top .n{font-size:26px;font-weight:800;letter-spacing:-1px;margin-top:4px;font-family:var(--mono)}.inv .top .n small{font-size:13px;color:var(--mut);font-weight:600;font-family:inherit}
+  .inv .li{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;font-size:13.5px;border-bottom:1px solid var(--line)}.inv .li span{color:var(--mut)}
+  .inv .tot{display:flex;justify-content:space-between;align-items:baseline;padding:16px 18px;background:var(--greenbg)}.inv .tot span{font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--green)}.inv .tot b{font-size:23px;font-weight:800;font-family:var(--mono);color:var(--green)}
+  .fine{color:var(--mut2);font-size:11.5px;line-height:1.5;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.fine b{color:var(--mut)}
+  .ledger{background:#141b29;color:#dfe7f2;border-radius:16px;padding:18px;font-family:var(--mono);font-size:13.5px;margin:4px 0 14px}
+  .ledger .r{display:flex;justify-content:space-between;padding:7px 0}.ledger .r span{color:#90a1ba}
+  .ledger .r.sep{border-top:1px dashed #33415a;margin-top:4px;padding-top:11px}
+  .ledger .r.sum{border-top:2px solid #33415a;margin-top:4px;padding-top:11px;font-weight:800;font-size:16px;color:#6ee7b0}
+  .rung{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .rung .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:20px;flex:none;background:#f4f5f1}
+  .rung b{font-size:14.5px}.rung small{color:var(--mut);font-size:12px;line-height:1.45;display:block;margin-top:2px}
+  .rung .neg{display:inline-block;margin-top:7px;background:var(--redbg);color:var(--red);font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+  .conn{text-align:center;color:var(--mut2);font-size:12px;margin:3px 0;font-weight:700}
+  .status{background:var(--greenbg);border:1px solid #bfe3cf;color:var(--green);border-radius:11px;padding:12px;font-size:13px;font-weight:600;margin:12px 0;line-height:1.5}
+  .status.warn{background:var(--goldbg);border-color:#ecdcb4;color:var(--gold)}.status.bad{background:var(--redbg);border-color:#ecc9c2;color:var(--red)}
+  .payrow{background:#141b29;color:#eef2f8;border-radius:14px;padding:16px;text-align:center;margin:12px 0}
+  .payrow .lbl{font-size:11px;color:#9fb0c6;letter-spacing:1px;text-transform:uppercase;font-weight:700}.payrow .val{font-family:var(--mono);font-size:22px;font-weight:800;margin-top:4px;letter-spacing:1px}
+  .retrow{display:flex;gap:9px;margin:12px 0}
+  .ret{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:15px 8px;text-align:center}
+  .ret .n{font-family:var(--mono);font-weight:800;font-size:22px}.ret .l{font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.3px;margin-top:4px;font-weight:700}
+  .big-stat{background:#141b29;color:#eef2f8;border-radius:16px;padding:20px;text-align:center;margin:12px 0}
+  .big-stat .n{font-family:var(--mono);font-size:44px;font-weight:800;color:#6ee7b0;letter-spacing:-1px}
+  .big-stat .l{color:#9fb0c6;font-size:13px;margin-top:4px}
+  .gauge{height:10px;border-radius:999px;background:#f4f5f1;overflow:hidden;margin:8px 0}
+  .gauge > i{display:block;height:100%;border-radius:999px;background:var(--green)}
+  .overlay{position:fixed;inset:0;background:rgba(10,15,25,.6);z-index:40;display:flex;align-items:flex-end;justify-content:center;padding:16px;animation:fade .2s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{background:var(--paper);border-radius:20px;width:100%;max-width:410px;padding:22px 20px 18px;animation:up .25s ease}
+  @keyframes up{from{transform:translateY(30px);opacity:.5}to{transform:none;opacity:1}}
+  .sheet .tnum{font-size:12px;font-weight:800;color:var(--green);letter-spacing:1px}
+  .sheet h3{font-size:20px;margin:6px 0 8px;letter-spacing:-.3px}.sheet p{color:var(--mut);font-size:14px;line-height:1.55;margin:0}
+  .dots{display:flex;gap:6px;justify-content:center;margin:16px 0 14px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--line2)}.dots i.on{background:var(--green)}
+  .sheet .row2{display:flex;gap:10px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="bar">
+    <button class="back" id="back">‹ Back</button>
+    <div class="wm"><span class="d"></span> Viwanda</div>
+    <div class="barbtns"><button class="ib" id="ownerbtn">owner</button><button class="ib" id="tourbtn">? tour</button><button class="ib" id="reset">reset</button></div>
+  </div>
+  <div class="scr" id="scr"></div>
+</div>
+<div id="ov"></div>
+<script>
+const CFG=(window.VIWANDA_CFG||{});
+const FEE=CFG.listingFee||1500;
+const LIVE=!!(CFG.supabaseUrl&&CFG.supabaseKey);
+let sb=null; try{ if(LIVE&&window.supabase) sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);}catch(e){}
+const KEY='viwanda_app_v2';
+const NET={joined:40120};
+const CATS=['Oils & Fats','Flour & Grains','Sugar','Tea & Coffee','Beverages','Soap & Detergents','Confectionery','Dairy','Rice & Cereals','Spices'];
+const BRANDS=[
+ {id:'bidco',nm:'Bidco Africa',cat:'Oils & Fats',good:'Kimbo · Elianto · Ushindi soap',price:4600,unit:'carton',cover:'Nationwide · Thika',web:'bidco-africa.com',ig:'bidcoafrica',wa:'1',rank:46,newShops:31,feat:true},
+ {id:'pwani',nm:'Pwani Oil',cat:'Oils & Fats',good:'Fresh Fri · Salit · Sawa',price:5200,unit:'jerrican',cover:'Nairobi · Coast',web:'pwani.net',ig:'pwanioil',wa:'1',rank:41,newShops:27},
+ {id:'unga',nm:'Unga Group',cat:'Flour & Grains',good:'Jogoo · Exe',price:1560,unit:'bale',cover:'Nairobi · nationwide',web:'unga.com',ig:'ungalimited',wa:'1',rank:38,newShops:24},
+ {id:'kabras',nm:'Kabras Sugar',cat:'Sugar',good:'Kabras 50kg · 1kg',price:6400,unit:'bag',cover:'Nationwide · Kakamega',web:'westkenya.co.ke',ig:'kabrassugar',wa:'1',rank:33,newShops:19},
+ {id:'ketepa',nm:'KETEPA',cat:'Tea & Coffee',good:'Ketepa Pride · Safari',price:2200,unit:'carton',cover:'Nationwide · Kericho',web:'ketepa.com',ig:'ketepatea',wa:'1',rank:29,newShops:16},
+ {id:'kapa',nm:'Kapa Oil Refineries',cat:'Oils & Fats',good:'Rina · Chapa Mandashi',price:3900,unit:'carton',cover:'Nationwide',web:'kapa-oil.com',ig:'kapaoil',wa:'1',rank:27,newShops:14},
+ {id:'kenafric',nm:'Kenafric Industries',cat:'Confectionery',good:'OYO · sweets · gum',price:1800,unit:'carton',cover:'Nationwide',web:'kenafricind.com',ig:'kenafric',wa:'1',rank:22,newShops:11},
+ {id:'brookside',nm:'Brookside Dairy',cat:'Dairy',good:'Milk · Tuzo · yoghurt',price:1200,unit:'crate',cover:'Nairobi · Central',web:'brookside.co.ke',ig:'brooksidedairy',wa:'1',rank:20,newShops:9},
+ {id:'capwell',nm:'Capwell Industries',cat:'Rice & Cereals',good:'Soko · Ndovu rice',price:2600,unit:'bale',cover:'Thika · Nairobi',web:'capwellindustries.com',ig:'sokomills',wa:'1',rank:16,newShops:7},
+];
+const BANKS=[
+ {id:'coop',nm:'Co-operative Bank',prod:'Stock Finance / LPO',terms:'2.5% commission · base rate + 4%',note:'Finances stock & purchase orders; distributor finance.'},
+ {id:'absa',nm:'Absa — Wezesha Stock',prod:'Unsecured LPO finance',terms:'Up to KES 12M · no tangible collateral',note:'Built for distributors and retailers to fund stock.'},
+ {id:'family',nm:'Family Bank',prod:'LPO Financing',terms:'Up to 75% of LPO · invoice discounting up to 80%',note:'90+ branches; hands-on with SME needs.'},
+ {id:'stanbic',nm:'Stanbic Bank',prod:'LPO Contract Financing',terms:'Fund supply orders from a known buyer',note:'Suppliers meet orders from known buyers.'},
+ {id:'cib',nm:'CIB Kenya',prod:'Stock Loan (revolving)',terms:'Dealer / agency financing · FMCG',note:'Revolving stock loans linked to commissions.'},
+];
+const TOUR=[
+ {n:'THE ESSENCE',h:'A home for Kenya’s makers.',p:'There is no platform built to put native Kenyan brands in front of the shops that sell them. Viwanda is that — a permanent e-expo of who makes what, owned by the makers, not the public sector.'},
+ {n:'FOR SHOPS',h:'Find & stock direct.',p:'Browse by category, search who makes cooking oil or sugar, see their prices, coverage and socials — then message them directly. No middleman in the way.'},
+ {n:'FOR MAKERS',h:'Get discovered. Pay KES 1,500.',p:'List your brand, products and links. Shops find you and reach out. You see exactly how many new shops you reached — so you know the 1,500 is worth it.'},
+ {n:'FAIR BY DESIGN',h:'You earn your rank.',p:'Nobody buys the top spot. Ranking comes from real outcomes — chats, orders, a full profile. The data rates everyone, honestly, including Viwanda itself.'},
+ {n:'LAYER ZERO',h:'Makers + shops + banks.',p:'Shops run free on Polaris; makers pay to be found; banks finance the stock. A private union of Kenyan business — that’s layer zero, pointed at 3M/month.'},
+];
+let tickTimer=null;
+const TK=['Mama Njeri viewed Bidco','Umoja connected with Unga','New shop joined · Ruiru','Four Ways ordered from Pwani','Kwa Mariam viewed KETEPA','Highway connected with Kabras'];
+function startTicker(){ stopTicker(); const push=()=>{const el=document.getElementById('ticker');if(!el){stopTicker();return;}el.insertAdjacentHTML('afterbegin',`<div class="tk" style="font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--line)">${TK[Math.floor(Math.random()*TK.length)]}</div>`);while(el.children.length>4)el.removeChild(el.lastChild);}; push();push();push(); tickTimer=setInterval(push,2100); }
+function stopTicker(){if(tickTimer){clearInterval(tickTimer);tickTimer=null;}}
+
+async function L_shopCount(){ if(!sb)return null; try{const{data}=await sb.rpc('public_shop_count');return typeof data==='number'?data:null;}catch(e){return null;} }
+async function L_ranked(){ if(!sb)return null; try{const{data,error}=await sb.from('listings_ranked').select('*');if(error)return null;return data;}catch(e){return null;} }
+async function L_submit(p){ if(!sb)return {demo:true}; try{const{error}=await sb.from('payments').insert([Object.assign({status:'pending'},p)]);return{ok:!error,error:error&&error.message};}catch(e){return{error:String(e)};} }
+async function L_event(id,kind){ if(!sb)return; try{await sb.from('events').insert([{listing_id:id,kind:kind}]);}catch(e){} }
+async function L_stats(){ if(!sb)return null; try{const{data}=await sb.rpc('platform_stats');return data&&data[0]?data[0]:null;}catch(e){return null;} }
+
+let S=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return{}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+if(!S.screen){S.screen='wall';S.hist=[];S.cat='All';S.sort='pop';}
+function go(s){S.hist=S.hist||[];S.hist.push(S.screen);S.screen=s;save();render();scrollTo(0,0);}
+document.getElementById('back').onclick=()=>{if(S.hist&&S.hist.length){S.screen=S.hist.pop();save();render();scrollTo(0,0);}};
+document.getElementById('reset').onclick=()=>{S={screen:'wall',hist:[],cat:'All',sort:'pop'};save();render();};
+document.getElementById('tourbtn').onclick=()=>{S.tourStep=0;renderTour();};
+document.getElementById('ownerbtn').onclick=()=>{go('owner');};
+
+const fmt=n=>Math.round(n).toLocaleString('en-KE');
+const live=()=>S.liveShops!=null;
+function daysLeft(){ if(!S.paidThrough)return 0; return Math.max(0,Math.ceil((S.paidThrough-Date.now())/86400000)); }
+function listedLive(){ return S.myListed && daysLeft()>0; }   // <-- the auto-lock, client side
+function sourceBrands(){
+  let src=(S.liveRanked&&S.liveRanked.length)?S.liveRanked.map(x=>({id:x.id,nm:x.name,cat:x.category||'Maker',good:x.products||'',price:x.price_from||0,unit:x.unit||'',cover:x.coverage||'',web:x.website,ig:x.instagram,wa:x.whatsapp,rank:x.rank_score||0,newShops:x.new_shops||0})):BRANDS;
+  if(listedLive())src=[{id:'mine',nm:(S.brand&&S.brand.name)||'Your Brand',cat:(S.brand&&S.brand.cat)||'Maker',good:(S.brand&&S.brand.good)||'',price:(S.brand&&S.brand.price)||0,unit:'',cover:(S.brand&&S.brand.cover)||'',mine:true,rank:S.returns?Math.round(S.returns.connects*3+S.returns.orders*3+10):8,newShops:S.returns?S.returns.newShops:0}].concat(src);
+  return src;
+}
+
+function render(){
+  const sc=S.screen||'wall';
+  document.getElementById('back').disabled=!(S.hist&&S.hist.length);
+  document.getElementById('scr').innerHTML=({wall:vWall,brands:vBrands,listing:vListing,join:vJoin,returns:vReturns,owner:vOwner,finance:vFinance,financeitem:vFinanceItem,chain:vChain,anchor:vAnchor,model:vModel}[sc]||vWall)();
+  if(sc==='wall')startTicker();else stopTicker();
+  wire();
+}
+
+function vWall(){
+  const joined=(live()?S.liveShops:NET.joined);
+  const makers=(S.liveRanked?S.liveRanked.length:BRANDS.length)+(listedLive()?1:0);
+  return `
+  <div class="hero"><div class="st">✦ VIWANDA</div>
+    <h2>Meet the makers. Refill your shop.</h2>
+    <p>The home for Kenya’s brands — find who makes what, and deal direct.</p></div>
+  <div class="modebar ${live()?'live':'demo'}"><span class="dot"></span>${live()?'live · connected to Polaris':'demo data · add your Supabase in config.js to go live'}</div>
+  <div class="counters">
+    <div class="ct a"><div class="n">${fmt(joined)}</div><div class="l">shops ${live()?'(live)':''}</div></div>
+    <div class="ct b"><div class="n">${makers}</div><div class="l">makers listed</div></div>
+    <div class="ct c"><div class="n">${CATS.length}</div><div class="l">categories</div></div>
+  </div>
+  <div class="sub">Live on Polaris</div>
+  <div style="background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:4px 14px;min-height:46px"><div id="ticker"></div></div>
+  <div class="doors">
+    <button class="door" data-go="brands"><div class="di">🏭</div><div><b>Makers</b><small>Browse & stock direct</small></div><div class="dg">›</div></button>
+    <button class="door" data-go="finance"><div class="di">🏦</div><div><b>Finance</b><small>Fund the stock</small></div><div class="dg">›</div></button>
+  </div>
+  ${listedLive()
+    ? `<button class="btn ghost" data-go="returns">📈 Your returns · ${daysLeft()} days left</button>`
+    : `<button class="btn act" data-go="join">List your brand · KES ${fmt(FEE)}/mo →</button>`}
+  <div class="fine">A private union of Kenyan makers — independent, searchable, growing. <button class="link" data-go="model" style="margin:0">The 3M plan →</button></div>`;
+}
+
+function vBrands(){
+  let list=sourceBrands();
+  const cats=['All'].concat(CATS.filter(c=>list.some(b=>b.cat===c)));
+  if(S.cat&&S.cat!=='All')list=list.filter(b=>b.cat===S.cat||b.mine);
+  list=list.slice().sort((a,b)=> S.sort==='price' ? (a.price||1e9)-(b.price||1e9) : (b.rank||0)-(a.rank||0));
+  return `
+  <div class="eyebrow">Viwanda · meet the makers</div>
+  <h1>Find who makes it.</h1>
+  <p class="lead">Kenya’s brands, searchable by category and ranked by what they actually deliver — not who paid most.</p>
+  <input class="ph" id="bsearch" placeholder="🔎 Search a maker or product…">
+  <div class="chips">${cats.map(c=>`<button class="chip ${S.cat===c?'on':''}" data-cat="${c}">${c}</button>`).join('')}</div>
+  <div class="sortrow"><button class="${S.sort==='pop'?'on':''}" data-sort="pop">★ Most popular</button><button class="${S.sort==='price'?'on':''}" data-sort="price">KES Lowest price</button></div>
+  <button class="btn act" data-go="join">+ List your brand (makers)</button>
+  <div class="sub">${list.length} makers</div>
+  ${list.map(b=>`<button class="card" data-s="${(b.nm+' '+b.cat+' '+(b.good||'')).toLowerCase()}" ${b.mine?'':'data-brand="'+b.id+'"'}>
+    <div class="r1"><div class="av" style="background:#141b29">${(b.nm||'?')[0]}</div>
+    <div class="nm"><b>${b.nm}</b><small>${b.cat}${b.cover?' · '+b.cover.split(' · ')[0]:''}</small></div>
+    ${b.feat?'<span class="pill warm">featured</span>':(b.mine?'<span class="pill ok">you</span>':'')}</div>
+    <div class="r2"><span class="tag">${b.good?b.good.split(' · ')[0]:b.cat}</span>${b.price?`<span class="tag">from KES ${fmt(b.price)}</span>`:''}<span class="rank">★ ${b.rank||0}</span></div>
+  </button>`).join('')}
+  <div class="fine">★ rank = outcomes + response + profile + recency (FindRight formula). ${live()?'Only paid, unexpired makers show — the database locks the rest automatically.':'Demo makers; on live only paid, unexpired slots show.'}</div>`;
+}
+
+function vListing(){
+  const all=sourceBrands(); const b=all.find(x=>x.id===S.brandId)||all[0];
+  L_event(b.id,'view');
+  const wa='https://wa.me/?text='+encodeURIComponent('Habari '+b.nm+' — I run a shop and found you on Viwanda. I’d like to stock your products directly. Tunaweza kuongea?');
+  return `
+  <div class="eyebrow">${b.cat}</div>
+  <h1 style="margin-bottom:4px">${b.nm}</h1>
+  <div style="margin-bottom:10px"><span class="pill ok">verified · pays monthly</span> <span class="rank" style="margin-left:6px">★ ${b.rank||0}</span></div>
+  <div class="box">
+    ${b.good?`<div class="kv"><span>Products</span><b>${b.good}</b></div>`:''}
+    ${b.price?`<div class="kv"><span>From</span><b>KES ${fmt(b.price)}${b.unit?' / '+b.unit:''}</b></div>`:''}
+    ${b.cover?`<div class="kv"><span>Delivers to</span><b>${b.cover}</b></div>`:''}
+    <div class="kv"><span>New shops reached</span><b>${b.newShops||0}</b></div>
+  </div>
+  <div class="socials">
+    ${b.web?`<a class="soc" target="_blank" rel="noopener" href="https://${b.web}">🌐 ${b.web}</a>`:''}
+    ${b.ig?`<a class="soc" target="_blank" rel="noopener" href="https://instagram.com/${b.ig}">📸 @${b.ig}</a>`:''}
+  </div>
+  <a class="btn pay" target="_blank" rel="noopener" href="${wa}" data-connect="${b.id}">💬 Message ${b.nm} directly</a>
+  <button class="btn act" data-go="finance">Order on credit &amp; finance it →</button>
+  <div class="fine">Shops want makers direct — makers want shops. Viwanda opens the line; the banks fund the stock.</div>
+  <button class="link" data-go="brands">← All makers</button>`;
+}
+
+function vJoin(){
+  // auto-lock: if the slot lapsed, show the LOCKED state, not the live one
+  if(S.myListed && daysLeft()<=0)return `
+    <div class="eyebrow">Slot expired</div>
+    <h1>Your listing is paused.</h1>
+    <div class="status bad">🔒 ${(S.brand&&S.brand.name)||'Your brand'} dropped off the board — the 30 days passed and no renewal was confirmed. Shops can’t see you right now. No hard feelings, renew any time and you’re back.</div>
+    <div class="payrow"><div class="lbl">Renew · Lipa na M-Pesa</div><div class="val">${CFG.paybill?('Paybill '+CFG.paybill):'Paybill — set in config'}</div><div class="lbl" style="margin-top:6px">KES ${fmt(FEE)} · Account: your phone</div></div>
+    <input class="ph m" id="f-code" placeholder="Paste M-Pesa code to renew">
+    <button class="btn pay" data-submit="renew">Renew my slot</button>
+    <div id="joinstatus"></div>`;
+  if(listedLive())return `
+    <div class="eyebrow">Your slot · live</div>
+    <h1>You’re live to the network.</h1>
+    <div class="status">✓ ${(S.brand&&S.brand.name)||'Your Brand'} is listed. ${daysLeft()<=3?'<b>Expires in '+daysLeft()+' days — renew soon so you don’t drop off.</b>':'Expires in <b>'+daysLeft()+' days</b>.'}</div>
+    <div class="box"><div class="kv"><span>Listing fee</span><b>KES ${fmt(FEE)} / month</b></div><div class="kv"><span>Reach</span><b>${fmt(live()?S.liveShops:NET.joined)} shops</b></div><div class="kv"><span>New shops reached</span><b>${S.returns?S.returns.newShops:0}</b></div></div>
+    <button class="btn pay" data-submit="renew">Renew my slot →</button>
+    <button class="btn ghost" data-go="returns">See my returns →</button>
+    ${!live()?`<button class="link" data-expire="1">⏩ (demo) fast-forward to expiry — test the auto-lock</button>`:''}`;
+  if(S.payPending)return `
+    <div class="eyebrow">Submitted ✓</div>
+    <h1>Karibu! Confirming your payment.</h1>
+    <div class="status warn">We’ve got your code <b>${S.payPending}</b>. Your brand goes live the moment it’s matched (usually minutes). Then you’re visible for 30 days.</div>
+    ${!live()?`<button class="btn pay" data-democonfirm="1">Simulate confirmation (demo)</button>`:''}
+    <button class="btn ghost" data-go="wall">← Home</button>
+    <div class="fine">No Daraja, no API — you paid, we match the code. If anything’s off we’ll never cut you wrongly.</div>`;
+  return `
+  <div class="eyebrow">For makers · list in minutes</div>
+  <h1>Put your brand in front of Kenya.</h1>
+  <p class="lead">We’re on your side — this is the one place built to get native brands found. Fill it in, pay KES ${fmt(FEE)}, you’re live.</p>
+  <input class="ph" id="f-name" placeholder="Brand / company name">
+  <select class="ph" id="f-cat"><option value="">Category…</option>${CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+  <input class="ph" id="f-prod" placeholder="Products (e.g. cooking oil, soap)">
+  <input class="ph" id="f-cover" placeholder="Where you deliver (e.g. Nairobi, Kiambu)">
+  <input class="ph" id="f-web" placeholder="Website (optional)">
+  <input class="ph" id="f-ig" placeholder="Instagram handle (optional)">
+  <input class="ph m" id="f-phone" placeholder="Your WhatsApp / M-Pesa number" inputmode="numeric">
+  <div class="payrow"><div class="lbl">Lipa na M-Pesa</div><div class="val">${CFG.paybill?('Paybill '+CFG.paybill):'Paybill — set in config'}</div><div class="lbl" style="margin-top:6px">KES ${fmt(FEE)} · Account: your phone</div></div>
+  <input class="ph m" id="f-code" placeholder="Paste M-Pesa code (e.g. SI39K2P0QR)">
+  <button class="btn pay" data-submit="new">I’ve paid — list me</button>
+  <div id="joinstatus"></div>
+  <div class="fine"><b>A full profile ranks higher</b> — the more shops see (products, coverage, links), the more reach you get. Rank is earned, never bought.</div>`;
+}
+
+function vReturns(){
+  const r=S.returns||{views:0,connects:0,orders:0,newShops:0};
+  const val=(r.newShops||0)*8500;
+  const score=Math.min(100, Math.round((r.newShops*12)+(r.connects*4)+(r.orders*8)));
+  return `
+  <div class="eyebrow">Your returns · this month</div>
+  <h1>Is the KES ${fmt(FEE)} worth it?</h1>
+  <p class="lead">Your numbers, honest. The one that matters most is new shops — real customers you didn’t have before.</p>
+  <div class="big-stat"><div class="n">${r.newShops||0}</div><div class="l">new shops reached (new customers)</div></div>
+  <div class="retrow">
+    <div class="ret"><div class="n" style="color:var(--indigo)">${r.views}</div><div class="l">views</div></div>
+    <div class="ret"><div class="n" style="color:var(--green)">${r.connects}</div><div class="l">direct chats</div></div>
+    <div class="ret"><div class="n" style="color:var(--gold)">${r.orders}</div><div class="l">orders</div></div>
+  </div>
+  <div class="box">
+    <div class="kv"><span>Est. value of new shops</span><b>KES ${fmt(val)}</b></div>
+    <div class="kv"><span>Your fee</span><b>KES ${fmt(FEE)}</b></div>
+    <div class="kv"><span>Return on fee</span><b style="color:${val>FEE?'var(--green)':'var(--gold)'}">${val>FEE?(Math.round(val/FEE*10)/10)+'×':'building…'}</b></div>
+  </div>
+  <div class="sub">Viwanda delivery score · for you</div>
+  <div class="gauge"><i style="width:${score}%"></i></div>
+  <div class="fine" style="border:0;padding-top:4px">${score>=50?'Viwanda is pulling its weight for you this month.':'Honestly — still warming up in your category. More shops are joining Polaris weekly; your reach climbs with them. We’ll keep earning it.'}</div>
+  <button class="btn pay" data-submit="renew">Renew · KES ${fmt(FEE)}</button>
+  <button class="link" data-go="wall">← Home</button>`;
+}
+
+function vOwner(){
+  // honest platform performance — data rates Viwanda, for Koome to see what to improve
+  const st=S.liveStats;
+  const liveMk=st?st.live_makers:BRANDS.length;
+  const lapsed=st?st.lapsed_makers:4;
+  const retention=Math.round(liveMk/(liveMk+lapsed)*100);
+  const prog=Math.round(liveMk/2000*100);
+  return `
+  <div class="eyebrow">Owner · the data rates Viwanda</div>
+  <h1>Honest platform health.</h1>
+  <p class="lead">No reviews — just what the numbers say. This is where you see what to fix and what to build next.</p>
+  <div class="retrow">
+    <div class="ret"><div class="n" style="color:var(--green)">${liveMk}</div><div class="l">paying makers</div></div>
+    <div class="ret"><div class="n" style="color:var(--gold)">${retention}%</div><div class="l">renewal rate</div></div>
+    <div class="ret"><div class="n" style="color:var(--indigo)">${lapsed}</div><div class="l">lapsed</div></div>
+  </div>
+  <div class="sub">Road to 3M · ${liveMk} / 2,000 makers</div>
+  <div class="gauge"><i style="width:${Math.max(2,prog)}%"></i></div>
+  <div class="sub">What the data says to improve</div>
+  <div class="box">
+    <div class="kv"><span>Weakest signal</span><b>${retention<70?'renewal — prove value faster':'reach per maker'}</b></div>
+    <div class="kv"><span>Lever that moves 3M most</span><b>shop retention on Polaris</b></div>
+    <div class="kv"><span>Next feature by data</span><b>show makers which shops</b></div>
+  </div>
+  <div class="why"><b>Why this view exists:</b> a maker renews when Viwanda delivered. So the number to defend is renewal rate — if it dips, the product isn’t proving itself and no amount of selling fixes it. Build what raises it.</div>
+  <button class="link" data-go="wall">← Home</button>`;
+}
+
+function vFinance(){
+  return `
+  <div class="eyebrow">Viwanda · finance desk</div>
+  <h1>Real banks fund the stock.</h1>
+  <p class="lead">Live stock-finance facilities. Viwanda hands them a scored chain instead of a blind one.</p>
+  ${BANKS.map(b=>`<button class="card" data-bank="${b.id}"><div class="r1"><div class="av" style="background:#2d3d8f">${b.nm[0]}</div><div class="nm"><b>${b.nm}</b><small>${b.prod}</small></div><div class="dg" style="color:var(--mut2);font-size:18px">›</div></div></button>`).join('')}
+  <div class="fine">Real, publicly advertised facilities; terms indicative. <button class="link" data-go="anchor" style="margin:0">Why banks lend to the anchor →</button></div>`;
+}
+function vFinanceItem(){
+  const b=BANKS.find(x=>x.id===S.bankId)||BANKS[0];
+  return `
+  <div class="eyebrow">Stock finance</div>
+  <h1 style="margin-bottom:4px">${b.nm}</h1>
+  <div style="margin-bottom:10px"><span class="pill ok">${b.prod}</span></div>
+  <div class="box"><div class="kv"><span>Facility</span><b>${b.prod}</b></div><div class="kv"><span>Terms</span><b>${b.terms}</b></div></div>
+  <div class="why"><b>Where Viwanda fits:</b> ${b.note} The bank wants one bankable anchor, not 10,000 dukas. Viwanda hands it the anchor; Polaris scores the shops underneath.</div>
+  <button class="link" data-go="chain">See the chain →</button>
+  <button class="link" data-go="finance" style="margin-left:16px">← Banks</button>`;
+}
+function vChain(){
+  return `
+  <div class="eyebrow">Stock loans · the chain</div><h1>Everyone finances the rung below.</h1>
+  <div class="rung"><div class="ic">🏭</div><div><b>Manufacturer</b><small>Ships on credit to wholesalers.</small><span class="neg">capital frozen</span></div></div>
+  <div class="conn">↓ owes</div>
+  <div class="rung"><div class="ic">🏬</div><div><b>Wholesaler</b><small>Stock on credit to shops.</small><span class="neg">cash stuck in deni</span></div></div>
+  <div class="conn">↓ owes</div>
+  <div class="rung"><div class="ic">🏪</div><div><b>Shop</b><small>Deni to customers.</small><span class="neg" style="background:var(--greenbg);color:var(--green)">on Polaris ✓</span></div></div>
+  <div class="why" style="margin-top:16px"><b>The fix:</b> the bank pays up the chain, repaid as the rung below pays — and Polaris shows whether it pays.</div>
+  <button class="link" data-go="anchor">Why banks lend big →</button><button class="link" data-go="finance" style="margin-left:16px">← Banks</button>`;
+}
+function vAnchor(){
+  return `
+  <div class="eyebrow">How banks actually lend</div><h1>One contract, not 10,000 shops.</h1>
+  <div class="rung"><div class="ic">🏦</div><div><b>Bank</b><small>One big loan to the anchor.</small></div></div>
+  <div class="conn">↓ funds</div>
+  <div class="rung"><div class="ic">🏭</div><div><b>Anchor (maker)</b><small>Capital unfrozen — stock on credit down.</small></div></div>
+  <div class="conn">↓ stock on credit</div>
+  <div class="rung"><div class="ic">🏪</div><div><b>Polaris shops</b><small>Only shops Polaris scores safe.</small></div></div>
+  <div class="why"><b>Polaris is the risk brain:</b> it only reaches shops on Polaris, so every big loan drags the tail onto the network.</div>
+  <button class="link" data-go="wall">← Home</button>`;
+}
+function vModel(){
+  return `
+  <div class="eyebrow">Layer zero · the plan</div><h1>Target: KES 3M / month.</h1>
+  <div class="ledger">
+    <div class="r"><span>2,000 makers × 1.5k listing</span>3.00M</div>
+    <div class="r sep"><span>Recurring floor</span>3.00M</div>
+    <div class="r"><span>+ featured / done-for-you tiers</span>upside</div>
+    <div class="r"><span>+ 1.5% origination (stock loans)</span>upside</div>
+    <div class="r sum"><span>Floor</span>≈ 3.0M ✓</div>
+  </div>
+  <div class="why"><b>The honest trade:</b> at KES 1,500 the floor needs volume — ~2,000 listed makers. That’s the point: mass onboarding of native brands nobody else courts. A featured tier and the 20k done-for-you lane get you there faster; origination compounds on top.</div>
+  <div class="box"><div class="kv"><span>Banks’ 2025 MSME lending</span><b>326B (2× target)</b></div>
+    <div class="kv"><span>Shops with no formal credit</span><b>84%</b></div>
+    <div class="kv"><span>The race</span><b>shop retention</b></div></div>
+  <button class="link" data-go="wall">← Home</button>`;
+}
+
+function renderTour(){
+  const i=S.tourStep||0,t=TOUR[i],ov=document.getElementById('ov');
+  ov.innerHTML=`<div class="overlay"><div class="sheet"><div class="tnum">${t.n} · ${i+1}/${TOUR.length}</div><h3>${t.h}</h3><p>${t.p}</p><div class="dots">${TOUR.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div><div class="row2">${i>0?'<button class="btn ghost" id="tprev" style="margin-top:0">Back</button>':''}<button class="btn pay" id="tnext" style="margin-top:0">${i<TOUR.length-1?'Next':'Start →'}</button></div></div></div>`;
+  document.getElementById('tnext').onclick=()=>{ if(i<TOUR.length-1){S.tourStep=i+1;save();renderTour();}else{S.seenTour=true;S.tourStep=0;save();ov.innerHTML='';} };
+  const pv=document.getElementById('tprev'); if(pv)pv.onclick=()=>{S.tourStep=i-1;save();renderTour();};
+}
+
+function demoReturns(){ return {views:Math.floor(Math.random()*40)+22,connects:Math.floor(Math.random()*9)+4,orders:Math.floor(Math.random()*5)+1,newShops:Math.floor(Math.random()*6)+2}; }
+async function doSubmit(kind){
+  const code=(document.getElementById('f-code')||{}).value||'';
+  const st=document.getElementById('joinstatus');
+  if(!code||code.length<6){ if(st)st.innerHTML='<div class="status bad">Paste the M-Pesa confirmation code to continue.</div>'; return; }
+  if(kind==='renew'){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; if(!S.returns)S.returns=demoReturns(); save();
+    if(sb)L_submit({brand_name:(S.brand&&S.brand.name)||'renew',mpesa_code:code,amount:FEE});
+    go('returns'); return; }
+  const name=(document.getElementById('f-name')||{}).value||'';
+  if(!name){ if(st)st.innerHTML='<div class="status bad">Add your brand name.</div>'; return; }
+  S.brand={name:name,cat:(document.getElementById('f-cat')||{}).value||'Maker',good:(document.getElementById('f-prod')||{}).value||'',cover:(document.getElementById('f-cover')||{}).value||'',web:(document.getElementById('f-web')||{}).value||'',ig:(document.getElementById('f-ig')||{}).value||'',phone:(document.getElementById('f-phone')||{}).value||'',price:0};
+  const res=await L_submit({brand_name:S.brand.name,category:S.brand.cat,products:S.brand.good,coverage:S.brand.cover,website:S.brand.web,instagram:S.brand.ig,phone:S.brand.phone,mpesa_code:code,amount:FEE});
+  S.payPending=code;
+  if(res&&res.error&&st)st.innerHTML='<div class="status bad">Saved, but server said: '+res.error+'</div>';
+  save(); go('join');
+}
+function demoConfirm(){ S.myListed=true; S.paidThrough=Date.now()+30*86400000; S.payPending=null; S.returns=demoReturns(); save(); go('returns'); }
+
+function wire(){
+  const bs=document.getElementById('bsearch'); if(bs)bs.oninput=()=>{const q=bs.value.toLowerCase();document.querySelectorAll('[data-s]').forEach(c=>{c.style.display=c.dataset.s.indexOf(q)>-1?'':'none';});};
+  document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{S.cat=b.dataset.cat;save();render();});
+  document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{S.sort=b.dataset.sort;save();render();});
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  document.querySelectorAll('[data-brand]').forEach(b=>b.onclick=()=>{S.brandId=b.dataset.brand;go('listing');});
+  document.querySelectorAll('[data-bank]').forEach(b=>b.onclick=()=>{S.bankId=b.dataset.bank;go('financeitem');});
+  document.querySelectorAll('[data-connect]').forEach(b=>b.addEventListener('click',()=>{L_event(b.dataset.connect,'connect'); if(S.returns){S.returns.connects++;S.returns.newShops++;save();}}));
+  document.querySelectorAll('[data-submit]').forEach(b=>b.onclick=()=>doSubmit(b.dataset.submit));
+  document.querySelectorAll('[data-democonfirm]').forEach(b=>b.onclick=()=>demoConfirm());
+  document.querySelectorAll('[data-expire]').forEach(b=>b.onclick=()=>{S.paidThrough=Date.now()-1000;save();go('join');});
+}
+
+render();
+if(!S.seenTour){ S.tourStep=0; renderTour(); }
+(async()=>{
+  const n=await L_shopCount(); if(n!=null)S.liveShops=n;
+  const rk=await L_ranked(); if(rk)S.liveRanked=rk;
+  const stt=await L_stats(); if(stt)S.liveStats=stt;
+  save(); render();
+})();
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});}); }
+</script>
+</body>
+</html>
